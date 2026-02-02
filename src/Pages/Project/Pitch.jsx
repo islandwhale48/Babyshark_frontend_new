@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-// 🔹 Helper to remove ALL markdown
+// 🔹 Remove markdown completely
 const stripMarkdown = (text = "") => {
   return text
-    .replace(/\*\*(.*?)\*\*/g, "$1") // **bold**
-    .replace(/\*(.*?)\*/g, "$1")     // *italic / bullets*
-    .replace(/#+\s?/g, "")           // headings like ##
-    .replace(/`/g, "")               // inline code
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/#+\s?/g, "")
+    .replace(/`/g, "")
     .trim();
 };
 
@@ -26,33 +26,31 @@ const Pitch = () => {
   });
 
   const [aiVersion, setAiVersion] = useState("");
-  const [editableText, setEditableText] = useState("");
   const [loadingAI, setLoadingAI] = useState(false);
 
+  // media
+  const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
 
-  // 🔹 Load existing pitch (CLEAN IT HERE)
+  // 🔹 Load existing pitch
   useEffect(() => {
     fetch(`http://localhost:5000/api/pitch/${startupId}`)
-      .then(res => res.json())
+      .then(r => r.json())
       .then(data => {
         if (!data) return;
 
         setForm(data.form || {});
-
         const baseText = data.chosenText || data.refinedText || "";
-        const cleaned = stripMarkdown(baseText);
-
-        setAiVersion(cleaned);
-        setEditableText(cleaned);
+        setAiVersion(stripMarkdown(baseText));
+        setImageUrl(data.imageUrl || "");
       });
   }, [startupId]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // 🔹 AI refinement (CLEAN IMMEDIATELY)
+  // 🔹 AI refinement
   const refineWithAI = async () => {
     setLoadingAI(true);
 
@@ -63,14 +61,11 @@ const Pitch = () => {
     });
 
     const data = await res.json();
-    const cleaned = stripMarkdown(data.refined);
-
-    setAiVersion(cleaned);
-    setEditableText(cleaned);
+    setAiVersion(stripMarkdown(data.refined));
     setLoadingAI(false);
   };
 
-  // 🔹 Upload image/video
+  // 🔹 Upload image + video
   const uploadMedia = async () => {
     if (!imageFile && !videoFile) return;
 
@@ -79,16 +74,17 @@ const Pitch = () => {
     if (imageFile) fd.append("image", imageFile);
     if (videoFile) fd.append("video", videoFile);
 
-    await fetch("http://localhost:5000/api/pitch/media", {
+    const res = await fetch("http://localhost:5000/api/pitch/media", {
       method: "POST",
       body: fd
     });
+
+    const data = await res.json();
+    if (data.imageUrl) setImageUrl(data.imageUrl);
   };
 
-  // 🔹 Save draft
   const saveDraft = async () => {
     setLoadingAI(true);
-
     await uploadMedia();
 
     await fetch("http://localhost:5000/api/pitch/save", {
@@ -97,7 +93,7 @@ const Pitch = () => {
       body: JSON.stringify({
         startupId,
         form,
-        refinedText: editableText // already clean
+        refinedText: aiVersion
       })
     });
 
@@ -105,48 +101,135 @@ const Pitch = () => {
     alert("Draft saved");
   };
 
-  // 🔹 Publish to Explore (ALREADY CLEAN)
   const publish = async () => {
     setLoadingAI(true);
+    await uploadMedia();
 
     await fetch("http://localhost:5000/api/pitch/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         startupId,
-        chosenText: editableText
+        chosenText: aiVersion
       })
     });
 
     setLoadingAI(false);
-    alert("Updated on Explore!");
+    alert("Posted to Explore!");
   };
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#0b0b0c] text-zinc-100">
 
-      {/* LEFT — INPUT */}
-      <div className="p-8 border-r border-[#1f1f22] flex flex-col gap-3 overflow-y-auto">
-        <h2 className="text-xl font-semibold mb-2">Create Your Pitch</h2>
+      {/* LEFT */}
+      <div className="p-8 border-r border-[#1f1f22] flex flex-col gap-4 overflow-y-auto">
+        <h2 className="text-xl font-semibold">Create Your Pitch</h2>
 
-        {Object.keys(form).map(key => (
-          key !== "stage" ? (
-            <textarea
-              key={key}
-              name={key}
-              placeholder={key}
-              value={form[key] || ""}
-              onChange={handleChange}
-              className="p-3 rounded-lg bg-[#121214] border border-[#222]"
-            />
-          ) : null
+        <input
+          name="startupName"
+          placeholder="Startup Name"
+          value={form.startupName}
+          onChange={handleChange}
+          className="p-3 rounded-lg bg-[#121214] border border-[#222]"
+        />
+
+        <input
+          name="tagline"
+          placeholder="One-line tagline"
+          value={form.tagline}
+          onChange={handleChange}
+          className="p-3 rounded-lg bg-[#121214] border border-[#222]"
+        />
+
+        {["problem", "solution", "audience", "uniqueness", "ask"].map(k => (
+          <textarea
+            key={k}
+            name={k}
+            placeholder={k}
+            value={form[k]}
+            onChange={handleChange}
+            className="min-h-[90px] p-3 rounded-lg bg-[#121214] border border-[#222]"
+          />
         ))}
 
-        <label className="text-sm text-zinc-400">Cover Image</label>
-        <input type="file" onChange={e => setImageFile(e.target.files[0])} />
+        <select
+          name="stage"
+          value={form.stage}
+          onChange={handleChange}
+          className="p-3 rounded-lg bg-[#121214] border border-[#222]"
+        >
+          <option value="">Current Stage</option>
+          <option>Idea</option>
+          <option>Prototype</option>
+          <option>Early Users</option>
+          <option>Revenue</option>
+        </select>
 
-        <label className="text-sm text-zinc-400">Demo Video</label>
-        <input type="file" onChange={e => setVideoFile(e.target.files[0])} />
+        {/* 📸 IMAGE BOX */}
+        <div className="border border-dashed border-[#333] rounded-xl p-4 bg-[#0f0f11]">
+          <p className="text-sm mb-2 text-zinc-400">Cover Image</p>
+
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="cover"
+              className="mb-3 rounded-lg w-full object-cover"
+            />
+          )}
+
+          <input
+  id="cover-image"
+  type="file"
+  accept="image/*"
+  hidden
+  onChange={(e) => setImageFile(e.target.files[0])}
+/>
+
+<label
+  htmlFor="cover-image"
+  className="inline-flex items-center justify-center
+             px-4 py-2 rounded-lg
+             bg-[#1f1f22] border border-[#333]
+             text-sm font-medium text-white
+             cursor-pointer hover:bg-[#26262a]
+             transition"
+>
+  Select Cover Image
+</label>
+
+        </div>
+
+        {/* 🎥 VIDEO BOX */}
+        <div className="border border-dashed border-[#333] rounded-xl p-4 bg-[#0f0f11]">
+          <p className="text-sm mb-2 text-zinc-400">Demo Video</p>
+
+          {videoFile && (
+            <p className="text-xs text-zinc-300 mb-2">
+              Selected: {videoFile.name}
+            </p>
+          )}
+
+          <input
+  id="demo-video"
+  type="file"
+  accept="video/*"
+  hidden
+  onChange={(e) => setVideoFile(e.target.files[0])}
+/>
+
+<label
+  htmlFor="demo-video"
+  className="inline-flex items-center justify-center
+             px-4 py-2 rounded-lg
+             bg-[#1f1f22] border border-[#333]
+             text-sm font-medium text-white
+             cursor-pointer hover:bg-[#26262a]
+             transition"
+>
+  Select Demo Video
+</label>
+
+        </div>
 
         <button
           onClick={refineWithAI}
@@ -157,7 +240,7 @@ const Pitch = () => {
 
         <button
           onClick={saveDraft}
-          className="py-3 rounded-lg border border-[#333] bg-[#1f2937]"
+          className="py-3 rounded-lg border border-[#333]"
         >
           Save Draft
         </button>
@@ -166,24 +249,27 @@ const Pitch = () => {
           onClick={publish}
           className="py-3 rounded-lg bg-emerald-500 text-black font-bold"
         >
-          Update Explore
+          Post to Explore
         </button>
       </div>
 
-      {/* RIGHT — EDITABLE TEXT (ALWAYS CLEAN) */}
+      {/* RIGHT */}
       <div className="p-8 overflow-y-auto">
-        <h2 className="text-xl font-semibold mb-2">Edit Pitch for Explore</h2>
-        <p className="text-sm text-zinc-400 mb-3">
-          This text will appear on the Explore page
-        </p>
+        <h2 className="text-xl font-semibold mb-3">Pitch Preview</h2>
 
-        <textarea
-          value={editableText}
-          onChange={(e) => setEditableText(e.target.value)}
-          className="w-full min-h-[400px] p-4 rounded-xl
-                     bg-[#121214] border border-[#222]
-                     text-sm leading-relaxed resize-none"
-        />
+        {!aiVersion && (
+          <p className="text-zinc-400">
+            AI refined version will appear here.
+          </p>
+        )}
+
+        {aiVersion && (
+          <div className="p-6 rounded-xl bg-[#121214] border border-[#222]">
+            <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+              {aiVersion}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );

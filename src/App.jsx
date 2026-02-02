@@ -32,6 +32,10 @@ function App() {
         <Route path="/workspace/:startupId/licenses" element={<Licenses />} />
         <Route path="/workspace/:startupId/dailyplanner" element={<DailyPlanner />} />
         <Route path="/pitch/:pitchId" element={<PitchDetail />} />
+        <Route
+          path="/workspace/:startupId/failuresimulator"
+          element={<FailureSimulator />}
+        />
         <Route path="/explore" element={<Explore />} />
       </Routes>
     </BrowserRouter>

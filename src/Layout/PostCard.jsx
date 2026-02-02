@@ -1,11 +1,25 @@
- import React from "react"
- import { useState } from "react"
- const PostCard = ({ post }) => {
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const PostCard = ({ post }) => {
   const [liked, setLiked] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <div style={styles.card}>
+    <div
+      style={styles.card}
+      onClick={() => navigate(`/pitch/${post.startupId}`)}
+    >
+      {/* IMAGE */}
+      {post.imageUrl && (
+        <img
+          src={post.imageUrl}
+          alt={post.form?.startupName}
+          style={styles.image}
+        />
+      )}
 
+      {/* TEXT */}
       <h3 style={styles.cardTitle}>
         {post.form?.startupName || "Untitled Startup"}
       </h3>
@@ -15,11 +29,14 @@
       </p>
 
       <div style={styles.pitchText}>
-        {post.chosenText?.slice(0, 280)}...
+        {post.chosenText?.slice(0, 120)}…
       </div>
 
-      <div style={styles.cardFooter}>
-
+      {/* ACTIONS */}
+      <div
+        style={styles.cardFooter}
+        onClick={(e) => e.stopPropagation()} // prevent card click
+      >
         <button
           style={styles.actionBtn}
           onClick={() => setLiked(!liked)}
@@ -30,17 +47,13 @@
         <button style={styles.actionBtn}>
           Save
         </button>
-
-        <button style={styles.primaryBtn}>
-          View Full
-        </button>
-
       </div>
-
     </div>
   );
 };
+
 export default PostCard;
+
 const styles = {
 
   page: {
@@ -132,5 +145,13 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     color: "#ddd"
-  }
+  },
+  image: {
+  width: "100%",
+  height: 170,
+  objectFit: "cover",
+  borderRadius: 10,
+  marginBottom: 12
+}
+
 };

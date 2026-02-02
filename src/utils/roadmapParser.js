@@ -41,6 +41,8 @@ export function getTasksForDay(sections, day) {
       s.tasks.map(task => ({
         id: `${day}-${task}`,
         title: task,
+        startDay: s.startDay,
+        endDay: s.endDay,
         completed: false,
         note: ""
       }))

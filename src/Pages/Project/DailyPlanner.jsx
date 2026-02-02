@@ -1,9 +1,10 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { parseRoadmapToTasks, getTasksForDay } from "../../utils/roadmapParser";
 
 const PROJECT_START_KEY = "projectStartDate";
+
+/* ---------- Helpers ---------- */
 
 function getProjectDay() {
   const stored = localStorage.getItem(PROJECT_START_KEY);
@@ -17,39 +18,89 @@ function getProjectDay() {
   return Math.floor((today - start) / 86400000) + 1;
 }
 
+function getWeeklySummary(startupId, currentDay) {
+  const weekStart = currentDay - ((currentDay - 1) % 7);
+  const weekEnd = weekStart + 6;
+
+  let total = 0;
+  let completed = 0;
+
+  for (let d = weekStart; d <= weekEnd; d++) {
+    const data = localStorage.getItem(`planner-${startupId}-day-${d}`);
+    if (!data) continue;
+
+    const tasks = JSON.parse(data);
+    total += tasks.length;
+    completed += tasks.filter(t => t.completed).length;
+  }
+
+  return { total, completed };
+}
+
+/* ---------- Component ---------- */
+
 export default function DailyPlanner() {
   const { startupId } = useParams();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const day = getProjectDay();
-  const storageKey = `planner-${startupId}-day-${day}`;
+  const todayKey = `planner-${startupId}-day-${day}`;
+  const yesterdayKey = `planner-${startupId}-day-${day - 1}`;
 
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      setTasks(JSON.parse(saved));
+    // If today already exists → load and stop
+    const savedToday = localStorage.getItem(todayKey);
+    if (savedToday) {
+      setTasks(JSON.parse(savedToday));
       setLoading(false);
       return;
     }
 
-    // Fetch roadmap text
+    const yesterdayTasks =
+      JSON.parse(localStorage.getItem(yesterdayKey)) || [];
+
     fetch(`http://localhost:5000/api/roadmap/${startupId}`)
       .then(res => res.json())
       .then(data => {
         const text = data.roadmap.replace(/\*\*/g, "");
         const sections = parseRoadmapToTasks(text);
-        const todaysTasks = getTasksForDay(sections, day);
-        setTasks(todaysTasks);
+
+        // Fresh roadmap tasks
+        const todaysTasks = getTasksForDay(sections, day).map(t => ({
+          ...t,
+          id: `${t.title}-${t.startDay}-${t.endDay}`
+        }));
+
+        // Carry-forward logic
+        const carryForward = yesterdayTasks
+          .filter(t =>
+            !t.completed &&
+            day >= t.startDay &&
+            day <= t.endDay
+          )
+          .map(t => ({
+            ...t,
+            carriedFrom: t.carriedFrom ?? day - 1
+          }));
+
+        const mergedTasks = [
+          ...todaysTasks,
+          ...carryForward.filter(
+            t => !todaysTasks.some(td => td.id === t.id)
+          )
+        ];
+
+        setTasks(mergedTasks);
         setLoading(false);
       });
-  }, [startupId, day]);
+  }, [startupId, day, todayKey, yesterdayKey]);
 
   useEffect(() => {
-    if (tasks.length) {
-      localStorage.setItem(storageKey, JSON.stringify(tasks));
+    if (!loading) {
+      localStorage.setItem(todayKey, JSON.stringify(tasks));
     }
-  }, [tasks]);
+  }, [tasks, loading, todayKey]);
 
   const toggle = (id) => {
     setTasks(tasks.map(t =>
@@ -64,7 +115,15 @@ export default function DailyPlanner() {
   };
 
   const progress = tasks.length
-    ? Math.round(tasks.filter(t => t.completed).length / tasks.length * 100)
+    ? Math.round(
+        (tasks.filter(t => t.completed).length / tasks.length) * 100
+      )
+    : 0;
+
+  const week = Math.ceil(day / 7);
+  const { total, completed } = getWeeklySummary(startupId, day);
+  const weekProgress = total
+    ? Math.round((completed / total) * 100)
     : 0;
 
   if (loading) {
@@ -94,16 +153,24 @@ export default function DailyPlanner() {
             key={task.id}
             className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
           >
-            <label className="flex items-center gap-3">
+            <label className="flex items-start gap-3">
               <input
                 type="checkbox"
                 checked={task.completed}
                 onChange={() => toggle(task.id)}
-                className="w-5 h-5 accent-blue-500"
+                className="w-5 h-5 mt-1 accent-blue-500"
               />
-              <span className={task.completed ? "line-through text-zinc-500" : ""}>
-                {task.title}
-              </span>
+              <div>
+                <p className={task.completed ? "line-through text-zinc-500" : ""}>
+                  {task.title}
+                </p>
+
+                {task.carriedFrom && (
+                  <p className="text-xs text-yellow-400 mt-1">
+                    Carried from Day {task.carriedFrom}
+                  </p>
+                )}
+              </div>
             </label>
 
             <textarea
@@ -116,6 +183,7 @@ export default function DailyPlanner() {
         ))}
       </div>
 
+      {/* Daily Progress */}
       {tasks.length > 0 && (
         <div className="max-w-3xl mt-8">
           <div className="h-2 bg-zinc-800 rounded">
@@ -125,10 +193,28 @@ export default function DailyPlanner() {
             />
           </div>
           <p className="text-xs text-zinc-500 mt-2">
-            {progress}% completed
+            {progress}% completed today
           </p>
         </div>
       )}
+
+      {/* Weekly Summary */}
+      <div className="max-w-3xl mt-10 border-t border-zinc-800 pt-6">
+        <p className="text-sm text-zinc-400 mb-2">
+          Week {week} Summary
+        </p>
+
+        <div className="h-2 bg-zinc-800 rounded">
+          <div
+            className="h-2 bg-emerald-500 rounded"
+            style={{ width: `${weekProgress}%` }}
+          />
+        </div>
+
+        <p className="text-xs text-zinc-500 mt-2">
+          {completed} / {total} tasks completed this week
+        </p>
+      </div>
     </div>
   );
 }

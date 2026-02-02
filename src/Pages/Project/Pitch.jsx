@@ -1,5 +1,4 @@
-import React from "react"
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 const Pitch = () => {
@@ -19,6 +18,9 @@ const Pitch = () => {
   const [aiVersion, setAiVersion] = useState("");
   const [loadingAI, setLoadingAI] = useState(false);
 
+  const [imageFile, setImageFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+
   // Load existing pitch
   useEffect(() => {
     fetch(`http://localhost:5000/api/pitch/${startupId}`)
@@ -37,34 +39,67 @@ const Pitch = () => {
 
   const refineWithAI = async () => {
     setLoadingAI(true);
+
     const res = await fetch("http://localhost:5000/api/pitch/refine", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
     });
+
     const data = await res.json();
     setAiVersion(data.refined);
     setLoadingAI(false);
   };
 
+  const uploadMedia = async () => {
+    console.log("uploadMedia called", { imageFile, videoFile });
+    if (!imageFile && !videoFile) return;
+
+    const fd = new FormData();
+    fd.append("startupId", startupId);
+
+    if (imageFile) fd.append("image", imageFile);
+    if (videoFile) fd.append("video", videoFile);
+
+    await fetch("http://localhost:5000/api/pitch/media", {
+      method: "POST",
+      body: fd
+    });
+  };
+
   const saveDraft = async () => {
     setLoadingAI(true);
+
+    // upload media first
+    await uploadMedia();
+
+    // save pitch text
     await fetch("http://localhost:5000/api/pitch/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ startupId, form, refinedText: aiVersion })
+      body: JSON.stringify({
+        startupId,
+        form,
+        refinedText: aiVersion
+      })
     });
+
     setLoadingAI(false);
-    alert("Draft saved");
+   // alert("Draft saved");
   };
 
   const publish = async () => {
     setLoadingAI(true);
+
     await fetch("http://localhost:5000/api/pitch/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ startupId, chosenText: aiVersion })
+      body: JSON.stringify({
+        startupId,
+        chosenText: aiVersion
+      })
     });
+
     setLoadingAI(false);
     alert("Posted to Explore!");
   };
@@ -79,56 +114,56 @@ const Pitch = () => {
         <input
           name="startupName"
           placeholder="Startup Name"
-          value={form.startupName}
+          value={form.startupName || ""}
           onChange={handleChange}
-          className="p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <input
           name="tagline"
           placeholder="One-line tagline"
-          value={form.tagline}
+          value={form.tagline || ""}
           onChange={handleChange}
-          className="p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <textarea
           name="problem"
           placeholder="What problem are you solving?"
-          value={form.problem}
+          value={form.problem || ""}
           onChange={handleChange}
-          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <textarea
           name="solution"
           placeholder="How does your startup solve it?"
-          value={form.solution}
+          value={form.solution || ""}
           onChange={handleChange}
-          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <textarea
           name="audience"
           placeholder="Who is this for?"
-          value={form.audience}
+          value={form.audience || ""}
           onChange={handleChange}
-          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <textarea
           name="uniqueness"
           placeholder="What makes you different?"
-          value={form.uniqueness}
+          value={form.uniqueness || ""}
           onChange={handleChange}
-          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <select
           name="stage"
-          value={form.stage}
+          value={form.stage || ""}
           onChange={handleChange}
-          className="p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="p-3 rounded-lg bg-[#121214] border border-[#222]"
         >
           <option value="">Current Stage</option>
           <option>Idea</option>
@@ -140,16 +175,29 @@ const Pitch = () => {
         <textarea
           name="ask"
           placeholder="What are you looking for?"
-          value={form.ask}
+          value={form.ask || ""}
           onChange={handleChange}
-          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222] text-white"
+          className="min-h-[95px] p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
         <label className="text-sm text-zinc-400">Cover Image</label>
-        <input type="file" className="text-zinc-400 text-sm" />
+       <input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    console.log("IMAGE SELECTED:", e.target.files[0]);
+    setImageFile(e.target.files[0]);
+  }}
+/>
+
 
         <label className="text-sm text-zinc-400">Demo Video</label>
-        <input type="file" className="text-zinc-400 text-sm" />
+        <input
+          type="file"
+          accept="video/*"
+          className="text-zinc-400 text-sm"
+          onChange={(e) => setVideoFile(e.target.files[0])}
+        />
 
         <button
           onClick={refineWithAI}

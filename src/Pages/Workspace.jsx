@@ -2,7 +2,7 @@ import React from "react"
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import FeatureCard from "../Layout/FeatureCard";
-
+import MainLayout from "../Layout/MainLayout";
 const Workspace = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -25,7 +25,9 @@ const Workspace = () => {
     }
   };
 return (
+<div><MainLayout/>
   <div className="min-h-screen bg-white flex justify-center pt-16 px-6">
+      
     <div className="w-full max-w-6xl">
 
       {/* Header */}
@@ -115,11 +117,11 @@ return (
           }
         />
 
+        </div>
       </div>
     </div>
-  </div>
-);
-
+    </div>
+  );
 };
 
 export default Workspace;

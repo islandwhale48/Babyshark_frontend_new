@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 import { useEffect, useState } from "react";
 import PostCard from "../Layout/PostCard.jsx";
 
@@ -13,9 +13,11 @@ const Explore = () => {
     fetch("http://localhost:5000/api/pitch/explore/feed")
       .then(r => r.json())
       .then(data => {
+        console.log(data)
         setPosts(data);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   const filtered = posts.filter(p => {

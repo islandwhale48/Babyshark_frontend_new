@@ -16,8 +16,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<FeasibilityCheck />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<FeasibilityCheck />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/workspace" element={<Workspace />} />
         <Route

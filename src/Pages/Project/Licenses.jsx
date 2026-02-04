@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import React from "react";
-
+import MainLayout from "../../Layout/MainLayout";
 export default function Licenses() {
   const { startupId } = useParams();
 
@@ -45,6 +45,7 @@ export default function Licenses() {
   };
 
  return (
+  <div><MainLayout/>
   <div className="max-w-6xl mx-auto px-6 py-10 text-black-100">
     {/* Header */}
     <h1 className="text-3xl font-bold mb-1 text-black">
@@ -145,6 +146,7 @@ export default function Licenses() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

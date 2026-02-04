@@ -1,7 +1,7 @@
 import React from "react"
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-
+import MainLayout from "../../Layout/MainLayout";
 const Roadmap = () => {
   const { startupId } = useParams();
   const [roadmap, setRoadmap] = useState("");
@@ -26,6 +26,7 @@ const Roadmap = () => {
   }
 
   return (
+    <div><MainLayout/>
     <div className="min-h-screen bg-zinc-950 py-12 px-4 flex justify-center">
       <div className="w-full max-w-4xl">
 
@@ -84,6 +85,7 @@ const Roadmap = () => {
           This roadmap is dynamically generated based on your startup inputs.
         </p>
       </div>
+    </div>
     </div>
   );
 };

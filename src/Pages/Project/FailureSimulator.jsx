@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
+import MainLayout from "../../Layout/MainLayout";
 const FailureSimulator = () => {
   const { startupId } = useParams(); // future use
 
@@ -66,6 +66,7 @@ const FailureSimulator = () => {
   /* -------- UI -------- */
 
   return (
+    <div><MainLayout/>
     <div className="min-h-screen bg-[#0b0b0c] flex justify-center px-6 py-12 text-zinc-100">
       <div className="w-full max-w-3xl space-y-6">
 
@@ -172,6 +173,7 @@ const FailureSimulator = () => {
         </div>
 
       </div>
+    </div>
     </div>
   );
 };

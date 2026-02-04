@@ -1,7 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import PostCard from "../Layout/PostCard.jsx";
-
+import MainLayout from "../Layout/MainLayout.jsx";
 const TABS = ["New", "Promising", "Ideas"];
 
 const Explore = () => {
@@ -36,6 +36,7 @@ const Explore = () => {
   }
 
   return (
+    <div><MainLayout/>
     <div className="min-h-screen bg-[#0b0b0c] flex justify-center pt-12">
       <div className="w-full max-w-7xl px-7 text-zinc-100">
 
@@ -82,6 +83,7 @@ const Explore = () => {
         </div>
 
       </div>
+    </div>
     </div>
   );
 };

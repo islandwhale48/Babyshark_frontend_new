@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { parseRoadmapToTasks, getTasksForDay } from "../../utils/roadmapParser";
-
+import MainLayout from "../../Layout/MainLayout";
 const PROJECT_START_KEY = "projectStartDate";
 
 /* ---------- Helpers ---------- */
@@ -135,6 +135,7 @@ export default function DailyPlanner() {
   }
 
   return (
+    <div><MainLayout/>
     <div className="min-h-screen bg-zinc-950 p-10 text-white">
       <h1 className="text-3xl font-semibold mb-1">Daily Planner</h1>
       <p className="text-sm text-zinc-400 mb-8">
@@ -215,6 +216,7 @@ export default function DailyPlanner() {
           {completed} / {total} tasks completed this week
         </p>
       </div>
+    </div>
     </div>
   );
 }

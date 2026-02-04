@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-
+import MainLayout from "../../Layout/MainLayout";
 // 🔹 Remove markdown completely
 const stripMarkdown = (text = "") => {
   return text
@@ -119,6 +119,7 @@ const Pitch = () => {
   };
 
   return (
+    <div><MainLayout/>
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-[#0b0b0c] text-zinc-100">
 
       {/* LEFT */}
@@ -127,7 +128,7 @@ const Pitch = () => {
 
         <input
           name="startupName"
-          placeholder="Startup Name"
+          placeholder="Startup name (e.g. BabyShark)"
           value={form.startupName}
           onChange={handleChange}
           className="p-3 rounded-lg bg-[#121214] border border-[#222]"
@@ -135,18 +136,44 @@ const Pitch = () => {
 
         <input
           name="tagline"
-          placeholder="One-line tagline"
+          placeholder="One-line tagline that clearly explains what you do"
           value={form.tagline}
           onChange={handleChange}
           className="p-3 rounded-lg bg-[#121214] border border-[#222]"
         />
 
-        {["problem", "solution", "audience", "uniqueness", "ask"].map(k => (
+        {[
+          {
+            key: "problem",
+            placeholder:
+              "What real-world problem are you solving? Who experiences this problem today?"
+          },
+          {
+            key: "solution",
+            placeholder:
+              "How does your product solve this problem? What is the core idea?"
+          },
+          {
+            key: "audience",
+            placeholder:
+              "Who are your target users or customers? Be specific."
+          },
+          {
+            key: "uniqueness",
+            placeholder:
+              "What makes your startup different from existing solutions?"
+          },
+          {
+            key: "ask",
+            placeholder:
+              "What are you looking for right now? (funding, users, mentors, partners)"
+          }
+        ].map(({ key, placeholder }) => (
           <textarea
-            key={k}
-            name={k}
-            placeholder={k}
-            value={form[k]}
+            key={key}
+            name={key}
+            placeholder={placeholder}
+            value={form[key]}
             onChange={handleChange}
             className="min-h-[90px] p-3 rounded-lg bg-[#121214] border border-[#222]"
           />
@@ -158,7 +185,7 @@ const Pitch = () => {
           onChange={handleChange}
           className="p-3 rounded-lg bg-[#121214] border border-[#222]"
         >
-          <option value="">Current Stage</option>
+          <option value="">Current stage of your startup</option>
           <option>Idea</option>
           <option>Prototype</option>
           <option>Early Users</option>
@@ -178,25 +205,24 @@ const Pitch = () => {
           )}
 
           <input
-  id="cover-image"
-  type="file"
-  accept="image/*"
-  hidden
-  onChange={(e) => setImageFile(e.target.files[0])}
-/>
+            id="cover-image"
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => setImageFile(e.target.files[0])}
+          />
 
-<label
-  htmlFor="cover-image"
-  className="inline-flex items-center justify-center
-             px-4 py-2 rounded-lg
-             bg-[#1f1f22] border border-[#333]
-             text-sm font-medium text-white
-             cursor-pointer hover:bg-[#26262a]
-             transition"
->
-  Select Cover Image
-</label>
-
+          <label
+            htmlFor="cover-image"
+            className="inline-flex items-center justify-center
+                       px-4 py-2 rounded-lg
+                       bg-[#1f1f22] border border-[#333]
+                       text-sm font-medium text-white
+                       cursor-pointer hover:bg-[#26262a]
+                       transition"
+          >
+            Select Cover Image
+          </label>
         </div>
 
         {/* 🎥 VIDEO BOX */}
@@ -210,25 +236,24 @@ const Pitch = () => {
           )}
 
           <input
-  id="demo-video"
-  type="file"
-  accept="video/*"
-  hidden
-  onChange={(e) => setVideoFile(e.target.files[0])}
-/>
+            id="demo-video"
+            type="file"
+            accept="video/*"
+            hidden
+            onChange={(e) => setVideoFile(e.target.files[0])}
+          />
 
-<label
-  htmlFor="demo-video"
-  className="inline-flex items-center justify-center
-             px-4 py-2 rounded-lg
-             bg-[#1f1f22] border border-[#333]
-             text-sm font-medium text-white
-             cursor-pointer hover:bg-[#26262a]
-             transition"
->
-  Select Demo Video
-</label>
-
+          <label
+            htmlFor="demo-video"
+            className="inline-flex items-center justify-center
+                       px-4 py-2 rounded-lg
+                       bg-[#1f1f22] border border-[#333]
+                       text-sm font-medium text-white
+                       cursor-pointer hover:bg-[#26262a]
+                       transition"
+          >
+            Select Demo Video
+          </label>
         </div>
 
         <button
@@ -259,7 +284,7 @@ const Pitch = () => {
 
         {!aiVersion && (
           <p className="text-zinc-400">
-            AI refined version will appear here.
+            Your AI-refined pitch will appear here.
           </p>
         )}
 
@@ -271,6 +296,7 @@ const Pitch = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

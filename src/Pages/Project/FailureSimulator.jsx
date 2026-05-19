@@ -16,7 +16,7 @@ const FailureSimulator = () => {
     setLoading(true);
 
     fetch(
-      `http://localhost:5000/api/failure-simulator?level=${level}`
+      `${import.meta.env.VITE_API_URL}/api/failure-simulator?level=${level}`
     )
       .then(res => res.json())
       .then(data => {

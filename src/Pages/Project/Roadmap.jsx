@@ -8,7 +8,7 @@ const Roadmap = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/roadmap/${startupId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/roadmap/${startupId}`)
       .then(res => res.json())
       .then(data => {
         const cleanText = data.roadmap.replace(/\*\*/g, "");

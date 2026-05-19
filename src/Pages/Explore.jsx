@@ -10,7 +10,7 @@ const Explore = () => {
   const [activeTab, setActiveTab] = useState("New");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/pitch/explore/feed")
+    fetch(`${import.meta.env.VITE_API_URL}/api/pitch/explore/feed`)
       .then(r => r.json())
       .then(data => {
         console.log(data)

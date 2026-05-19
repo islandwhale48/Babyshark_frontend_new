@@ -35,7 +35,7 @@ const Pitch = () => {
 
   // 🔹 Load existing pitch
   useEffect(() => {
-    fetch(`http://localhost:5000/api/pitch/${startupId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/pitch/${startupId}`)
       .then(r => r.json())
       .then(data => {
         if (!data) return;
@@ -54,7 +54,7 @@ const Pitch = () => {
   const refineWithAI = async () => {
     setLoadingAI(true);
 
-    const res = await fetch("http://localhost:5000/api/pitch/refine", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pitch/refine`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
@@ -74,7 +74,7 @@ const Pitch = () => {
     if (imageFile) fd.append("image", imageFile);
     if (videoFile) fd.append("video", videoFile);
 
-    const res = await fetch("http://localhost:5000/api/pitch/media", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/pitch/media`, {
       method: "POST",
       body: fd
     });
@@ -87,7 +87,7 @@ const Pitch = () => {
     setLoadingAI(true);
     await uploadMedia();
 
-    await fetch("http://localhost:5000/api/pitch/save", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/pitch/save`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -105,7 +105,7 @@ const Pitch = () => {
     setLoadingAI(true);
     await uploadMedia();
 
-    await fetch("http://localhost:5000/api/pitch/publish", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/pitch/publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

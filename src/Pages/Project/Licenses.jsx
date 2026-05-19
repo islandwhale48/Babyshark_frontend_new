@@ -14,11 +14,11 @@ export default function Licenses() {
   useEffect(() => {
     const fetchData = async () => {
       const licensesRes = await axios.get(
-        `http://localhost:5000/api/compliance/licenses/${startupId}`
+        `${import.meta.env.VITE_API_URL}/api/compliance/licenses/${startupId}`
       );
 
       const dashboardRes = await axios.get(
-        `http://localhost:5000/api/compliance/dashboard/${startupId}`
+        `${import.meta.env.VITE_API_URL}/api/compliance/dashboard/${startupId}`
       );
 
       const map = {};
@@ -35,7 +35,7 @@ export default function Licenses() {
 
   const updateStatus = async (licenseId, status) => {
     const res = await axios.patch(
-      `http://localhost:5000/api/compliance/status/${startupId}/${licenseId}`,
+      `${import.meta.env.VITE_API_URL}/api/compliance/status/${startupId}/${licenseId}`,
       { status }
     );
 

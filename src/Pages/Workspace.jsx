@@ -50,7 +50,7 @@ return (
           onClick={() =>
             go(
               "roadmap",
-              `http://localhost:5000/api/roadmap/${startupId}`,
+              `${import.meta.env.VITE_API_URL}/api/roadmap/${startupId}`,
               `/workspace/${startupId}/roadmap`
             )
           }
@@ -63,7 +63,7 @@ return (
           onClick={() =>
             go(
               "pitch",
-              `http://localhost:5000/api/pitch/${startupId}`,
+              `${import.meta.env.VITE_API_URL}/api/pitch/${startupId}`,
               `/workspace/${startupId}/pitch`
             )
           }
@@ -85,7 +85,7 @@ return (
           onClick={() =>
             go(
               "planner",
-              `http://localhost:5000/api/dailyplanner/${startupId}`,
+              `${import.meta.env.VITE_API_URL}/api/dailyplanner/${startupId}`,
               `/workspace/${startupId}/dailyplanner`
             )
           }
@@ -98,7 +98,7 @@ return (
           onClick={() =>
             go(
               "fail",
-              `http://localhost:5000/api/failuresimulator/${startupId}`,
+              `${import.meta.env.VITE_API_URL}/api/failuresimulator/${startupId}`,
               `/workspace/${startupId}/failuresimulator`
             )
           }
@@ -111,7 +111,7 @@ return (
           onClick={() =>
             go(
               "insights",
-              `http://localhost:5000/api/marketinsights/${startupId}`,
+              `${import.meta.env.VITE_API_URL}/api/marketinsights/${startupId}`,
               `/workspace/${startupId}/marketinsights`
             )
           }

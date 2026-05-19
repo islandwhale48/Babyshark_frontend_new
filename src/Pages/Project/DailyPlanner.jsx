@@ -60,7 +60,7 @@ export default function DailyPlanner() {
     const yesterdayTasks =
       JSON.parse(localStorage.getItem(yesterdayKey)) || [];
 
-    fetch(`http://localhost:5000/api/roadmap/${startupId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/roadmap/${startupId}`)
       .then(res => res.json())
       .then(data => {
         const text = data.roadmap.replace(/\*\*/g, "");
